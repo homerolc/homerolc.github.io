@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Escolha sua Cota - Rifa da Maya</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+      gap: 10px;
+      margin-top: 30px;
+    }
+    .botao {
+      padding: 10px;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      cursor: pointer;
+      min-height: 60px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      transition: 0.2s;
+    }
+    .disponivel {
+      background: #fff;
+      border: 1px solid #ccc;
+      color: #333;
+    }
+    .reservado {
+      background: #fff5cc;
+      border: 1px solid #e0c361;
+      color: #996600;
+    }
+    .pago {
+      background: #cce5ff;
+      border: 1px solid #3399ff;
+      color: #004085;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Rifa da Maya – Escolha sua Cota</h1>
+<p style="text-align: center;"><strong>Chave PIX:</strong> 3d700207-a62a-4ab0-9eb9-8a9aa4bd05db</p>
+
+<div class="grid" id="gradeNumeros"></div>
+
+<script>
+  const TOTAL_NUMEROS = 300;
+  let rifa = [];
+
+  function carregarRifa() {
+    const salva = localStorage.getItem("rifaMayaDados");
+    if (salva) {
+      rifa = JSON.parse(salva);
+    } else {
+      rifa = Array.from({ length: TOTAL_NUMEROS }, (_, i) => ({
+        numero: i + 1,
+        nome: "",
+        contato: "",
+        pago: false
+      }));
+    }
+  }
+
+  function salvarRifa() {
+    localStorage.setItem("rifaMayaDados", JSON.stringify(rifa));
+  }
+
+  function renderizar() {
+    const container = document.getElementById("gradeNumeros");
+    container.innerHTML = "";
+
+    rifa.forEach((item, i) => {
+      const btn = document.createElement("button");
+      btn.className = "botao";
+      if (item.nome && item.pago) {
+        btn.classList.add("pago");
+      } else if (item.nome) {
+        btn.classList.add("reservado");
+      } else {
+        btn.classList.add("disponivel");
+      }
+
+      btn.innerHTML = `<strong>${item.numero}</strong><div>${item.nome || "-"}</div>`;
+
+      if (!item.pago) {
+        btn.onclick = () => editarCota(i);
+      }
+
+      container.appendChild(btn);
+    });
+  }
+
+  function editarCota(i) {
+    const nome = prompt("Digite seu nome:", rifa[i].nome || "");
+    if (nome === null) return; // cancelado
+
+    if (nome.trim() === "") {
+      // limpar cota se não está paga
+      rifa[i].nome = "";
+      rifa[i].contato = "";
+    } else {
+      const contato = prompt("Digite seu contato (opcional):", rifa[i].contato || "") || "";
+      rifa[i].nome = nome.trim();
+      rifa[i].contato = contato.trim();
+    }
+
+    salvarRifa();
+    renderizar();
+  }
+
+  carregarRifa();
+  renderizar();
+</script>
+
+</body>
+</html>
